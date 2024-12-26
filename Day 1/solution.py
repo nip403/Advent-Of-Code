@@ -5,7 +5,7 @@ from functools import partial
 with open(Path(__file__).parent / "input_data.txt", "r") as f:
     data = f.read()
 
-def main(data: str) -> int: # warning: extremely readable solution!
+def main(data: str) -> tuple[int]: # warning: extremely readable solution!
     # Part 1
     left, right = map(partial(np.array, dtype=int), zip(*[i.split() for i in data.split("\n")]))
     

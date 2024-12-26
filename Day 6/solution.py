@@ -103,7 +103,7 @@ class ObstructionFinder(Map):
     def __init__(self, initial_state: str):
         
 
-def main(data: str) -> list[int]:
+def main(data: str) -> tuple[int]:
     state = Map(data)
     
     # Part 1

@@ -4,7 +4,7 @@ from functools import cmp_to_key
 with open(Path(__file__).parent / "input_data.txt", "r") as f:
     data = f.read()
 
-def main(data: str) -> list[int]:
+def main(data: str) -> tuple[int]:
     rules, updates = data.split("\n\n")
     rules = [[int(i) for i in r.split("|")] for r in rules.split("\n")]
     updates = [[int(i) for i in u.split(",")] for u in updates.split("\n")]

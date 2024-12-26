@@ -16,7 +16,7 @@ def check(l: list[int]) -> int:
 def check_dampened(l: list[int]) -> int:
     return any(check([element for pos, element in enumerate(l) if not pos == i]) for i in range(len(l))) # O(n^2 log n), incredibly terrible
 
-def main(data: str) -> list[int]:
+def main(data: str) -> tuple[int]:
     # Part 1
     safe = 0
     

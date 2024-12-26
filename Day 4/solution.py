@@ -5,7 +5,7 @@ import re
 with open(Path(__file__).parent / "input_data.txt", "r") as f:
     data = f.read()
 
-def main(data: str) -> int:
+def main(data: str) -> tuple[int]:
     data = data.split("\n")
     
     # Part 1

@@ -4,7 +4,7 @@ import re
 with open(Path(__file__).parent / "input_data.txt", "r") as f:
     data = f.read()
 
-def main(data: str) -> int:
+def main(data: str) -> tuple[int]:
     # Part 1
     total = 0
     mult = lambda a, b: int(a) * int(b)
