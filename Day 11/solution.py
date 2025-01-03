@@ -1,4 +1,5 @@
 from pathlib import Path
+from collections import defaultdict
 import math
 
 with open(Path(__file__).parent / "input_data.txt", "r") as f:
@@ -8,14 +9,11 @@ class Lineup:
     def __init__(self, stones: list[int]) -> None:
         self.stones = stones
         self.memo = {}
-        self.levels = {} # for debugging
+        self.levels = defaultdict(list) # for debugging
         
     def update(self, value: int, remaining: int) -> int:
         # for debugging
-        if not remaining in self.levels:
-            self.levels[remaining] = [value]
-        else:
-            self.levels[remaining].append(value)
+        self.levels[remaining].append(value)
         
         if not remaining:
             return 1
