@@ -50,24 +50,21 @@ def gen_output(registers: np.ndarray, program: np.ndarray) -> list[int]:
                     
     return output
 
-def backtrack(program: np.ndarray) -> int:
-    output = program.tolist()
+def backtrack(A: int, prog: list[int], i: int): # got this from the internet after optimised brute force was taking too long
+    if i == len(prog):
+        return A
     
-    
+    for b in range(8):
+        if (b ^ ((A << 3) + b >> (b ^ 7))) % 8 == prog[i]: 
+            if a := backtrack((A << 3) + b, prog, i + 1):
+                return a
     
 def main(data: str) -> tuple[int]:
     registers, program = data.split("\n\n")
     registers = np.array([int(i.split(": ")[1]) for i in registers.splitlines()])
     program = np.array([int(i) for i in program.split(": ")[1].split(",")])
-    
-    print(program)
-    data2 = """Register A: 2024
-Register B: 0
-Register C: 0
 
-Program: 0,3,5,4,3,0"""
-
-    return ",".join(str(i) for i in gen_output(registers, program)), backtrack(program)
+    return ",".join(str(i) for i in gen_output(registers, program)), backtrack(0, program[::-1], 0)
 
 
 
