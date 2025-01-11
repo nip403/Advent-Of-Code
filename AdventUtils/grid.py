@@ -33,14 +33,20 @@ class Grid:
         else: # assumes we want an unordered string -> int mapping
             self._mapping = {element: i for i, element in enumerate(set(np.ravel(self.grid)))}
     
+    def mapped(self) -> np.ndarray[Union[str | int]]:
+        return np.vectorize(self._mapping.get)(self.grid)
+    
     def __str__(self) -> str: # NOTE: provide an int-to-string mapping if you have ints > 10
         return "\n".join(
             "".join([
-                self._mapping.get(item, str(item)) 
+                str(self._mapping.get(item, item)) 
             for item in row
             ]) 
         for row in self.grid
         )
+        
+    def __repr__(self):
+        return str(self)
         
     def __getitem__(self, key: NumpySlice) -> T:
         return self.grid[key]

@@ -6,6 +6,7 @@ from .constants import UP, DOWN, LEFT, RIGHT, DIRECTIONS
 
 # builtins & np (utils)
 import numpy as np
+import pandas as pd
 import itertools as it
 from functools import partial, cache
 import heapq
