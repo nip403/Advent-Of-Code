@@ -1,23 +1,58 @@
 from AdventUtils import *
 
-def backtrack_val(val: str, wires: dict[str, int], gates: list[list[str]]) -> bool:
-    if val in wires:
-        return wires[val]
+Char: TypeAlias = str
+Gate: TypeAlias = str
+T = TypeVar("T")
+NestedList: TypeAlias = Union[T, List[T]]
+ValidCircuit: TypeAlias = NestedList[Gate]
+BitArray: TypeAlias = np.ndarray[bool]
+
+class Circuit:
+    gate_map = {
+        "AND": "&",
+        "OR": "|",
+        "XOR": "^",
+    }
     
-    idx = np.where(gates[:, -1] == val)[0][0]    
-    a, op, b = gates[idx, :3]
-
-    if op == "XOR":
-        result = backtrack_val(a, wires, gates) ^ backtrack_val(b, wires, gates)
-
-    elif op == "OR":
-        result = backtrack_val(a, wires, gates) | backtrack_val(b, wires, gates)
+    @staticmethod
+    def backtrack_val(gate: Gate, wires: Mapping[Gate, bool], gates: list[list[Union[Gate, str]]]) -> bool:
+        if gate in wires:
+            return wires[gate]
         
-    elif op == "AND":
-        result = backtrack_val(a, wires, gates) & backtrack_val(b, wires, gates)
+        idx = np.where(gates[:, -1] == gate)[0][0]    
+        a, op, b = gates[idx, :3]
 
-    wires[val] = result
-    return result    
+        if op == "XOR":
+            result = Circuit.backtrack_val(a, wires, gates) ^ Circuit.backtrack_val(b, wires, gates)
+
+        elif op == "OR":
+            result = Circuit.backtrack_val(a, wires, gates) | Circuit.backtrack_val(b, wires, gates)
+            
+        elif op == "AND":
+            result = Circuit.backtrack_val(a, wires, gates) & Circuit.backtrack_val(b, wires, gates)
+
+        wires[gate] = result
+        return result    
+    
+    @staticmethod
+    def build_circuit(gate: Gate, initial_wires: Mapping[Gate, bool], gates: list[list[Union[Gate, str]]]) -> NestedList[Gate]:        
+        if gate in initial_wires or gate in "XOR AND OR".split():
+            return gate
+        
+        return [Circuit.build_circuit(element, initial_wires, gates) for element in gates[gates[:, -1] == gate][0, :3]]
+
+    @staticmethod
+    def print_circuit(circuit: ValidCircuit) -> None:
+        if isinstance(circuit, list):
+            if len(circuit) == 3:
+                left = Circuit.print_circuit(circuit[0])  
+                right = Circuit.print_circuit(circuit[2]) 
+                
+                return f"{left} {Circuit.gate_map[circuit[1]]} {right}"
+        else:
+            return str(circuit)
+        
+        raise Exception(f"Invalid circuit passed: {circuit}")
 
 class Day24(Solution):
     """
@@ -26,10 +61,11 @@ class Day24(Solution):
             test_data
             memo
     """
+    
     def __init__(self, *, test_data: Optional[str] = None, memoization_type: Optional[type] = None) -> None:
         super().__init__(test_data=test_data, memoization_type=memoization_type)
 
-    def process_data(self, data: str) -> None:
+    def parse_input(self, data: str) -> None:
         wires, gates = data.split("\n\n")
 
         return {
@@ -41,118 +77,84 @@ class Day24(Solution):
 
     def adder(self, a: bool, b: bool) -> tuple[bool]:
         return a & b, a ^ b
+    
+    def ripple_carry_adder(self, a: BitArray, b: BitArray) -> BitArray:
+        assert len(a) == len(b)
+        
+        result = np.zeros(len(a), dtype=bool)
+        carry = False
+        
+        for i in range(len(a)):
+            result[i] = a[i] ^ b[i] ^ carry
+            carry = (a[i] & b[i]) | (b[i] & carry) | (a[i] & carry)
+            
+        return result if not carry else np.concatenate((result, np.array([True], dtype=bool)))
+    
+    def get_gate(self, letter: Char, number: int) -> Gate:
+        return f"{letter}{"0" if number < 10 else ""}{number}"
+    
+    def build_z(self, z_gates: set[Gate], wires: Mapping[Gate, bool], gates: list[list[Union[Gate, str]]]) -> BitArray:        
+        z_binary = np.empty(len(z_gates), dtype=bool)
 
-    def part_1(self, use_test_data: bool = False) -> Union[int, str]:
-        data = self.data if not use_test_data else self.test_data
+        for gate in z_gates:
+            z_binary[int(gate[1:])] = Circuit.backtrack_val(gate, wires, gates)
+        
+        return z_binary
+
+    def part_1(self, data: List[Any]) -> Union[int, str]:
         wires = data["wires"]
         gates = data["gates"]
         
-        all_z = set()
+        self.all_z = set()
         
         for g in gates:
             if g[0].startswith("z"):
-                all_z.add(g[0])
+                self.all_z.add(g[0])
                 
             if g[2].startswith("z"):
-                all_z.add(g[4])  
+                self.all_z.add(g[4])  
             
             if g[4].startswith("z"):
-                all_z.add(g[4])
-                
-        self.z_binary = np.empty(len(all_z), dtype=bool)
+                self.all_z.add(g[4])
 
-        for wire in all_z:
-            self.z_binary[int(wire[1:])] = backtrack_val(wire, wires, gates)
-
-        return self.to_decimal(self.z_binary[::-1])
+        return self.to_decimal(self.build_z(self.all_z, copy.deepcopy(wires), gates)[::-1]) # [zn, z(n-1), z(n-2), ..., z02, z01, z00]
     
-    def part_2(self, use_test_data: bool = False) -> Union[int, str]:
-        data = self.data if not use_test_data else self.test_data
-        wires = data["wires"]
+    def part_2(self, data: List[Any]) -> Union[int, str]: 
         gates = data["gates"]
         
-        x = np.array([wires.get(f"x{"0" if i < 10 else ""}{i}", 0) for i in range(self.z_binary.size)], dtype=bool)[::-1]
-        y = np.array([wires.get(f"y{"0" if i < 10 else ""}{i}", 0) for i in range(self.z_binary.size)], dtype=bool)[::-1]
+        """ # just trying to get a visualisation (it didn't help at all)
+        circuits: Mapping[Gate, NestedList[Gate]] = {}
         
-        for i in reversed(range(x.size)): # work from smallest up
-            carry, unit = self.adder(x[i], y[i])
-            
-            if not self.z_binary[i] == x[i] ^ y[i]:
-                pass
+        for i in range(len(self.all_z)):
+            print(Circuit.print_circuit(Circuit.build_circuit(self.get_gate("z", i), data["wires"], gates))
+        """
         
-        return
+        """ 
+        answer from a very helpful explanation from some very smart people: https://www.reddit.com/r/adventofcode/comments/1hla5ql/2024_day_24_part_2_a_guide_on_the_idea_behind_the/
+        i assume this is all derived from ripple carry adder logic
+        
+        A gate is faulty if:
+            1 - If the output of a gate is z, then the operation has to be XOR unless it is the last bit. 
+            2 - If the output of a gate is not z and the inputs are not x, y then it has to be AND / OR, but not XOR. 
+            3 - If you have a XOR gate with inputs x, y, there must be another XOR gate with this gate as an input. Search through all gates for an XOR-gate with this gate as an input; if it does not exist, your (original) XOR gate is faulty. These don't apply for the gates with input x00, y00.
+            4 - If you have an AND-gate, there must be an OR-gate with this gate as an input. If that gate doesn't exist, the original AND gate is faulty. These don't apply for the gates with input x00, y00.
+        """
+        
+        faulty = []
+        all_XOR = gates[gates[:, 1] == "XOR"]
+        all_OR = gates[gates[:, 1] == "OR"]
+        
+        for gate in gates:
+            a, op, b, _, out = gate
+             
+            if (out.startswith("z") and not out == self.get_gate("z", len(self.all_z) - 1) and not op == "XOR") or \
+                (not out.startswith("z") and not any(any(g.startswith(l) for l in "xy") for g in [a, b]) and op == "XOR") or \
+                (not (a[-2:] == "00" or b[-2:] == "00") and all(any(g.startswith(l) for l in "xy") for g in [a, b]) and op == "XOR" and not out in np.ravel(all_XOR[:, [0, 2]])) or \
+                (not (a[-2:] == "00" or b[-2:] == "00") and op == "AND" and not out in np.ravel(all_OR[:, [0, 2]])):
+                faulty.append(gate)
+        
+        return ",".join(sorted(np.array(faulty)[:, -1], key=lambda x: (ord(x[0]), ord(x[1]), ord(x[2]))))
 
 if __name__ == "__main__":
-    dasta = """x00: 1
-x01: 0
-x02: 1
-x03: 1
-x04: 0
-y00: 1
-y01: 1
-y02: 1
-y03: 1
-y04: 1
-
-ntg XOR fgs -> mjb
-y02 OR x01 -> tnw
-kwq OR kpj -> z05
-x00 OR x03 -> fst
-tgd XOR rvg -> z01
-vdt OR tnw -> bfw
-bfw AND frj -> z10
-ffh OR nrd -> bqk
-y00 AND y03 -> djm
-y03 OR y00 -> psh
-bqk OR frj -> z08
-tnw OR fst -> frj
-gnj AND tgd -> z11
-bfw XOR mjb -> z00
-x03 OR x00 -> vdt
-gnj AND wpb -> z02
-x04 AND y00 -> kjc
-djm OR pbm -> qhw
-nrd AND vdt -> hwm
-kjc AND fst -> rvg
-y04 OR y02 -> fgs
-y01 AND x02 -> pbm
-ntg OR kjc -> kwq
-psh XOR fgs -> tgd
-qhw XOR tgd -> z09
-pbm OR djm -> kpj
-x03 XOR y03 -> ffh
-x00 XOR y04 -> ntg
-bfw OR bqk -> z06
-nrd XOR fgs -> wpb
-frj XOR qhw -> z04
-bqk OR frj -> z07
-y03 OR x01 -> nrd
-hwm AND bqk -> z03
-tgd XOR rvg -> z12
-tnw OR pbm -> gnj"""
-
-    data="""x00: 0
-x01: 1
-x02: 0
-x03: 1
-x04: 0
-x05: 1
-y00: 0
-y01: 0
-y02: 1
-y03: 1
-y04: 0
-y05: 1
-
-x00 AND y00 -> z05
-x01 AND y01 -> z02
-x02 AND y02 -> z01
-x03 AND y03 -> z03
-x04 AND y04 -> z04
-x05 AND y05 -> z00"""
-    
-    solution = Day24(
-        test_data = data
-    )
-
+    solution = Day24()
     print(solution.main(use_test_data=False))
