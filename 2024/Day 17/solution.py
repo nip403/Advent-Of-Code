@@ -66,9 +66,5 @@ def main(data: str) -> tuple[int]:
 
     return ",".join(str(i) for i in gen_output(registers, program)), backtrack(0, program[::-1], 0)
 
-
-
-
-
 if __name__ == "__main__":
     print(main(data)) 

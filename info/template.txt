@@ -1,0 +1,31 @@
+from AdventUtils import Solution, *
+
+class Day{DAY}(Solution):
+    """
+        __dict__:
+            data
+            test_data
+            memo
+    """
+    def __init__(self, *, test_data: Optional[str] = None, memoization_type: Optional[type] = None) -> None:
+        super().__init__(test_data=test_data, memoization_type=memoization_type)
+
+    def process_data(self, data: str) -> None:
+        return data
+
+    def part_1(self, use_test_data: bool = False) -> Union[int, str]:
+        data = self.data if not use_test_data else self.test_data
+        
+        return
+    
+    def part_2(self, use_test_data: bool = False) -> Union[int, str]:
+        data = self.data if not use_test_data else self.test_data
+        
+        return
+
+if __name__ == "__main__":
+    solution = Day{DAY}(
+        test_data = """"""
+    )
+
+    print(solution.main())

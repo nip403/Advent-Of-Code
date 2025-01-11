@@ -4,7 +4,7 @@ from itertools import combinations
 from math import gcd
 import sys
 
-np. set_printoptions(threshold=sys. maxsize)
+np.set_printoptions(threshold=sys. maxsize)
 
 with open(Path(__file__).parent / "input_data.txt", "r") as f:
     data = f.read()
