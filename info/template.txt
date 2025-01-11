@@ -7,6 +7,7 @@ class Day{DAY}(Solution):
             test_data
             memo
     """
+    
     def __init__(self, *, test_data: Optional[str] = None, memoization_type: Optional[type] = None) -> None:
         super().__init__(test_data=test_data, memoization_type=memoization_type)
 
