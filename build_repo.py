@@ -4,10 +4,11 @@ from selenium.webdriver.common.by import By
 import chromedriver_autoinstaller
 import requests
 from pathlib import Path
+import datetime
 import os
 import sys
 
-YEAR = 2025
+YEAR = datetime.date.today().year
 
 def main():
     # Login

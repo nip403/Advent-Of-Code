@@ -15,7 +15,7 @@ import networkx as nx
 from enum import Enum
 
 # helpers / semantics
-from typing import NewType, Callable, TypeVar, Any, TypeAlias, Optional, Union, List, Dict, TypeAlias
+from typing import NewType, Callable, TypeVar, Any, TypeAlias, Optional, Union, List, Dict, TypeAlias, Generic
 from collections import defaultdict, namedtuple, deque
 from collections.abc import Mapping
 from pprint import pprint
