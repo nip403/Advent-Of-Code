@@ -1,6 +1,6 @@
 from AdventUtils import *
 
-class Day{DAY}(Solution):
+class Day7(Solution):
     """
         __dict__:
             data
@@ -12,7 +12,7 @@ class Day{DAY}(Solution):
         super().__init__(test_data=test_data, memoization_type=memoization_type)
 
     def parse_input(self, data: str) -> None:
-        return data.strip()
+        return data
 
     def part_1(self, data: List[Any]) -> Union[int, str]: 
         return
@@ -21,8 +21,8 @@ class Day{DAY}(Solution):
         return
 
 if __name__ == "__main__":
-    solution = Day{DAY}(
+    solution = Day7(
         test_data = """"""
     )
 
-    print(solution.main(use_test_data=False))
+    print(solution.main())

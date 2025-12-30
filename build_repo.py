@@ -26,6 +26,7 @@ def main():
     for day in range(1, 26):
         (new := (parent / f"{YEAR}\\Day {day}")).mkdir(parents=True, exist_ok=True)    
         
+        """
         # Question page html
         with open(new / "question.html", "w+", encoding="utf-8") as f:
             try:
@@ -38,6 +39,7 @@ def main():
             
             except Exception as e:
                 print(f"Failed to generate Day {day}: {e}")
+        """
             
         # Python file 
         if not os.path.exists(new / "solution.py"):

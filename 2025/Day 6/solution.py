@@ -1,6 +1,6 @@
 from AdventUtils import *
 
-class Day{DAY}(Solution):
+class Day6(Solution):
     """
         __dict__:
             data
@@ -21,8 +21,8 @@ class Day{DAY}(Solution):
         return
 
 if __name__ == "__main__":
-    solution = Day{DAY}(
+    solution = Day6(
         test_data = """"""
     )
 
-    print(solution.main(use_test_data=False))
+    print(solution.main(use_test_data=True))
