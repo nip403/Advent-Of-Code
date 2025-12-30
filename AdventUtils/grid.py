@@ -6,45 +6,47 @@ import heapq
 from .constants import UP, DOWN, LEFT, RIGHT
 
 T = TypeVar("T")
+N = TypeVar("N")
 Coordinate = NewType("Coordinate", tuple[int])
 NumpySlice = NewType("NumpySlice", Union[slice, object])
 
-# Note - it's not always the case that storing everything as a map is the best idea: if there are different objects with different conditions over a sparse map, it may well be better to just keep lists for each object in an iterator parent 
+# NOTE!!! NO NEGATIVE VALUES
 class Grid:
     """
         Convention for mazes:
             0: empty space
-            -1: wall
+            1: wall
             *_: define in set_mapping()        
     """
-    _empty_space = 0
-    _wall_space = -1
     
-    def __init__(self, grid_data: list[Union[list[T], np.ndarray]], *, dtype: T) -> None:
-        self.grid = np.array(grid_data, dtype=dtype)
-        self.dtype = dtype
-        self._mapping = dict()
+    def __init__(self, grid_data: list[Union[list[T], np.ndarray]], *, mapping: Mapping[T, N] = None) -> None:
+        self.grid = np.array(grid_data)
         self.shape = self.grid.shape
         
-    def set_mapping(self, mapping: Optional[Union[Mapping[str, int], Mapping[int, str], Mapping[str, str]]] = None) -> None:
         if mapping is not None: # user predefined mapping, mainly for printing
             self._mapping = mapping
             
-        else: # assumes we want an unordered string -> int mapping
+        else: # unordered string -> int mapping
             self._mapping = {element: i for i, element in enumerate(set(np.ravel(self.grid)))}
-    
-    def mapped(self) -> np.ndarray[Union[str | int]]:
-        return np.vectorize(self._mapping.get)(self.grid)
-    
-    def __str__(self) -> str: # NOTE: provide an int-to-string mapping if you have ints > 10
-        return "\n".join(
-            "".join([
-                str(self._mapping.get(item, item)) 
-            for item in row
-            ]) 
-        for row in self.grid
-        )
         
+        keys, inv = np.unique(self.grid, return_inverse=True)
+        vals = np.array([self._mapping[str(k)] for k in keys])
+        self.grid = vals[inv].reshape(self.grid.shape)
+        
+        self._mapping = {v: k for k, v in self._mapping.items()} 
+    
+    @property    
+    def visual(self) -> str:
+        lookup = np.array([self._mapping[i] for i in range(max(self._mapping) + 1)])
+        return "\n".join(map("".join, lookup[self.grid]))
+    
+    def set_mapping(self, new_mapping: Mapping[N, T]) -> None:
+        # note the type hint, grid is translated after initialisation so mapping needs to be reversed
+        self._mapping = new_mapping
+        
+    def __str__(self) -> str: # doesn't work for numbers > 10
+        return "\n".join(map("".join, self.grid.astype(str)))
+
     def __repr__(self):
         return str(self)
         
@@ -52,8 +54,6 @@ class Grid:
         return self.grid[key]
     
     def __setitem__(self, key: NumpySlice, value: T) -> None:
-        assert type(value) == self.dtype, f"Shape or dtype set is inconsistent. Set dtype: {type(value)}, Ndarray dtype: {self.dtype}"
-        
         self.grid[key] = value
         
     def bounds(self, coord: Coordinate) -> bool:
