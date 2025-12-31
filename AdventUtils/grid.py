@@ -10,7 +10,7 @@ N = TypeVar("N")
 Coordinate = NewType("Coordinate", tuple[int])
 NumpySlice = NewType("NumpySlice", Union[slice, object])
 
-# NOTE!!! NO NEGATIVE VALUES
+# NOTE!!! NO NEGATIVE VALUES - i think
 class Grid:
     """
         Convention for mazes:

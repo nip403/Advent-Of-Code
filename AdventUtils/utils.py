@@ -4,11 +4,17 @@ from collections.abc import Callable
 
 ##### General 
 
-def recursive_split(data: str, func: Callable = lambda x: x, *delimiters: str) -> list[Any]: 
+def recursive_split(data: Any | list[Any], func: Callable = lambda x: x, *delimiters: str) -> list[Any]: 
     if not delimiters:
-        return func(data)
+        return func(data) # consider default lambda x: x if not x.isdigit() else int(x)
     
-    return [recursive_split(i, func, *delimiters[1:]) for i in data.split(delimiters[0])]
+    return [
+        recursive_split(
+            i, 
+            func, 
+            *(delimiters[1:] if type(data) != list else delimiters))
+        for i in (data.split(delimiters[0]) if type(data) != list else data)
+    ]
     
 ##### Vectors
 
