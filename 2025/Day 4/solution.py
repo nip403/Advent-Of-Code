@@ -1,6 +1,6 @@
 from AdventUtils import *
 
-class Grid2(Grid):
+class Warehouse(Grid):
     def __init__(self, grid_data: list[Union[list[T], np.ndarray]], *, mapping: Mapping[T, N] = None) -> None:
         super().__init__(grid_data, mapping=mapping)
         
@@ -13,9 +13,6 @@ class Grid2(Grid):
     
     def count_rolls(self) -> int:
         return np.sum(self.grid)
-    
-    def __iter__(self) -> None:
-        return self
     
     def __next__(self) -> None:
         self.grid[(self.grid > 0) & (self.neighbours < 4)] = 0
@@ -34,7 +31,7 @@ class Day4(Solution):
         super().__init__(test_data=test_data, memoization_type=memoization_type)
 
     def parse_input(self, data: str) -> None:
-        return Grid2([list(row) for row in data.strip().replace(".", "0").splitlines()], mapping={"0": 0, "@": 1}) # replace is needed for the padding later
+        return Warehouse([list(row) for row in data.strip().replace(".", "0").splitlines()], mapping={"0": 0, "@": 1}) # replace is needed for the padding later
 
     def part_1(self, data: List[Any]) -> Union[int, str]: 
         return np.count_nonzero((data.grid > 0) & (data.neighbours < 4))
