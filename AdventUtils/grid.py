@@ -1,4 +1,3 @@
-import networkx as nx
 import numpy as np
 from typing import TypeVar, NewType, List, Optional, Callable, Union
 from collections.abc import Mapping
@@ -10,10 +9,10 @@ N = TypeVar("N")
 Coordinate = NewType("Coordinate", tuple[int])
 NumpySlice = NewType("NumpySlice", Union[slice, object])
 
-# NOTE!!! NO NEGATIVE VALUES - i think
+# TODO: could possibly merge some functionality with graph.Graph
 class Grid:
     """
-        Convention for mazes:
+        Convention for mazes: - Note, no negative values
             0: empty space
             1: wall
             *_: define in set_mapping()        
@@ -111,9 +110,3 @@ class Grid:
     
     def __next__(self) -> None:
         return self
-
-class Graph(nx.Graph):
-    def __init__(self, graph_data: List[T]) -> None:
-        super().__init__(graph_data)
-        
-    # TODO/see networkx docs
